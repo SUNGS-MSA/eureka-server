@@ -1,0 +1,74 @@
+server:
+  port: ${service_port:9011}
+
+spring:
+  application:
+    name: eureka-server
+
+  profiles:
+    active: ${profile:local}
+
+
+
+
+--- #local 환경 
+spring:
+  config:
+    activate:
+      on-profile: local
+      
+
+eureka:
+  instance:    # eureka server로서 정보 	 
+    hostname: ${peer:peer1}.127.0.0.1.nip.io  #ip로 자동등록되게 하려면 hostname되신 'prefer-ip-address: true' 해주면 된다.
+    
+  client:  # eureka clinet로서 정보
+    #register-with-eureka: false #(단독서버모드) 단독서버일 경우 등록할 다른 유레카서버가 없으니 false로 하면 된다.)
+    register-with-eureka: true #(멀티인스턴스 peering모드)유레카서버 자신을 peering 된 다른 eureka서버에 자신을 등록 (단독서버일 경우 등록할 다른 유레카서버가 없으니 false로 하면 된다.)
+    
+    fetch-registry: true  #로컬에 유레카서버의 레지스트리 정보를 가져와 캐시를 저장할지 여부
+    service-url:  #유레카서버 주소
+      #defaultZone: http://peer1.127.0.0.1.nip.io:9011/eureka #(단독서버모드)자신의 주소만 적는다
+      defaultZone: http://peer1.127.0.0.1.nip.io:9011/eureka,http://peer2.127.0.0.1.nip.io:9012/eureka #(멀티인스턴스 peering모드)자신의주소와 다른인스턴스주소도 같이적는다.
+      
+
+--- #dev 환경
+spring:
+  config:
+    activate:
+      on-profile: dev
+      
+    import: "optional:configserver:http://localhost:9001" # 클라우드 2020.0 버전이후 최신 버전에서는 spring.config.import 속성을 사용하는 것이 권장
+    #optional 은 config서버와 통신시 실패하면 내부의 내부설정 정보를 읽게 된다(통신실패시 에러발생후 종료하고 싶으면 'optional:' 부분을 제거하면됨 )
+
+
+eureka:
+  instance: 
+    hostname: ${HOSTNAME}.eureka
+  client: 
+    register-with-eureka: true
+    fetch-registry: true
+    service-url: 
+      defaultZone: ${eureka_servers:http://localhost:9011/eureka}
+      
+
+--- #prod 환경
+spring:
+  config:
+    activate:
+      on-profile: prod
+      
+    import: "optional:configserver:http://localhost:9001" # 클라우드 2020.0 버전이후 최신 버전에서는 spring.config.import 속성을 사용하는 것이 권장
+    #optional 은 config서버와 통신시 실패하면 내부의 내부설정 정보를 읽게 된다(통신실패시 에러발생후 종료하고 싶으면 'optional:' 부분을 제거하면됨 )
+
+    
+eureka:
+  instance: 
+    hostname: ${HOSTNAME}.eureka
+  client: 
+    register-with-eureka: true
+    fetch-registry: true
+    service-url: 
+      defaultZone: ${eureka_servers:http://localhost:9011/eureka}
+            
+      
